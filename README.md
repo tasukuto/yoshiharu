@@ -1,3 +1,3 @@
 # よしはる
 
-![よしはる](static/images/fujiwe.png)
+![よしはる](static/images/yoshiharu.png)
