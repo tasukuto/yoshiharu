@@ -48,9 +48,9 @@ const num_class = class_info[0]['科目番号']
 
 const students_u2025 = []
 
-for (var c_info of class_info) {
-  var num_student = 0;
-  for (var s_info of student_info ) {
+for (let c_info of class_info) {
+  let num_student = 0;
+  for (let s_info of student_info ) {
     if (c_info['学籍番号'] == s_info['学籍番号']) {
       num_student = s_info['学籍番号'];
       year_applied = s_info['入学年度'] - s_info['入学年次']
