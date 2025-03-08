@@ -1,4 +1,4 @@
-// @ts-check
+// // @ts-check
 import { parse } from "../libs/csv-parse/dist/esm/sync.js";
 
 // const records = parse(csvData, {
@@ -8,7 +8,6 @@ import { parse } from "../libs/csv-parse/dist/esm/sync.js";
 // console.dir(records);
 
 /**
- *
  * @param {string} id
  * @returns {HTMLElement}
  */
@@ -31,20 +30,10 @@ function mustQuerySelector(selector) {
   }
   return object;
 }
+const class_info = mustGetElementById("class_info");
+const student_info = mustGetElementById("student_info");
+const output = mustGetElementById("output");
 
-// const class_info = document.getElementById('class_info')
-// const student_info = document.getElementById('student_info')
-
-// console.log(class_info)
-// console.log(student_info)
-
-// const THRESHOLD = 2025;
-// const csvData = `
-// name,age,city
-// Alice,30,New York
-// Bob,25,Los Angeles
-// Charlie,35,Chicago
-// `;
 const csvData = `
 学籍番号,入学年度,入学年次
 202710025,2027,1
@@ -62,69 +51,7 @@ const csvData = `
 202110098,2021,1
 202510049,2025,1
 202513059,2025,3
-`
-// const records = parse(csvData, {
-//   columns: true, // ヘッダーをキーとして使用
-//   skip_empty_lines: true, // 空行を無視
-// });
-
-// console.log(records);
-// const class_info = [
-//   { '科目番号': 6501102, '学籍番号': 202710025 },
-//   { '科目番号': 6501102, '学籍番号': 202710054 },
-//   { '科目番号': 6501102, '学籍番号': 202710015 },
-//   { '科目番号': 6501102, '学籍番号': 202710010 },
-//   { '科目番号': 6501102, '学籍番号': 202713003 },
-//   { '科目番号': 6501102, '学籍番号': 202713055 },
-//   { '科目番号': 6501102, '学籍番号': 202713036 },
-//   { '科目番号': 6501102, '学籍番号': 202610000 },
-//   { '科目番号': 6501102, '学籍番号': 202610024 },
-//   { '科目番号': 6501102, '学籍番号': 202610029 },
-//   { '科目番号': 6501102, '学籍番号': 202613097 },
-//   { '科目番号': 6501102, '学籍番号': 202613081 },
-//   { '科目番号': 6501102, '学籍番号': 202110098 },
-//   { '科目番号': 6501102, '学籍番号': 202510049 },
-//   { '科目番号': 6501102, '学籍番号': 202513059 }
-// ];
-
-// const student_info = [
-//     { '学籍番号': 202710025, '入学年度': 2027, '入学年次': 1 },
-//     { '学籍番号': 202710054, '入学年度': 2027, '入学年次': 1 },
-//     { '学籍番号': 202710015, '入学年度': 2027, '入学年次': 1 },
-//     { '学籍番号': 202710010, '入学年度': 2027, '入学年次': 1 },
-//     { '学籍番号': 202713003, '入学年度': 2027, '入学年次': 3 },
-//     { '学籍番号': 202713055, '入学年度': 2027, '入学年次': 3 },
-//     { '学籍番号': 202713036, '入学年度': 2027, '入学年次': 3 },
-//     { '学籍番号': 202610000, '入学年度': 2026, '入学年次': 1 },
-//     { '学籍番号': 202610024, '入学年度': 2026, '入学年次': 1 },
-//     { '学籍番号': 202610029, '入学年度': 2026, '入学年次': 1 },
-//     { '学籍番号': 202613097, '入学年度': 2026, '入学年次': 3 },
-//     { '学籍番号': 202613081, '入学年度': 2026, '入学年次': 3 },
-//     { '学籍番号': 202110098, '入学年度': 2021, '入学年次': 1 },
-//     { '学籍番号': 202510049, '入学年度': 2025, '入学年次': 1 },
-//     { '学籍番号': 202513059, '入学年度': 2025, '入学年次': 3 }
-// ];
-
-// const num_class = class_info[0]["科目番号"];
-
-const students_u2025 = [];
-
-// for (let c_info of class_info) {
-//   let num_student = 0;
-//   for (let s_info of student_info ) {
-//     if (c_info['学籍番号'] === s_info['学籍番号']) {
-//       num_student = s_info['学籍番号'];
-//       const year_applied = s_info['入学年度'] - s_info['入学年次'];
-//       if (year_applied < THRESHOLD) {
-//         students_u2025.push(s_info['学籍番号']);
-//       }
-//       break;
-//     }
-//   }
-//   if (num_student == 0) {
-//     console.log(`${c_info['学籍番号']} is NOT included in students list.`);
-//   }
-// }
+`;
 
 /**
  * @param {string} s
@@ -138,34 +65,138 @@ function mitaniParseClass(s) {
   if (!Array.isArray(class_list)) {
     return undefined;
   }
-  console.dir(class_list[0]);
   for (const class_info of class_list) {
+    // console.dir(class_info);
     if (
       !(
         typeof class_info === "object" &&
-         Object.entries(class_info).length === 3
+        Object.entries(class_info).length === 48
       )
     ) {
+      console.dir("!");
       return undefined;
     }
-    for(const class_element of Object.values(class_info)){
-      if(typeof class_element !== "string"){
+    for (const class_element of Object.values(class_info)) {
+      if (typeof class_element !== "string") {
+        // console.dir(class_element);
         return undefined;
       }
-      // console.dir(class_element);
     }
   }
   return class_list;
 }
+/**
+ * @param {string} s
+ * @returns {any}
+ */
+function mitaniParseStudent(s) {
+  const class_list = parse(s, {
+    columns: true, // ヘッダーをキーとして使用
+    skip_empty_lines: true, // 空行を無視
+  });
+  if (!Array.isArray(class_list)) {
+    return undefined;
+  }
+  for (const class_info of class_list) {
+    if (
+      !(
+        typeof class_info === "object"
+        // Object.entries(class_info).length === 4
+      )
+    ) {
+      console.dir("!a");
+      return undefined;
+    }
+    for (const class_element of Object.values(class_info)) {
+      if (typeof class_element !== "string") {
+        // console.dir(class_element);
+        return undefined;
+      }
+    }
+  }
+  return class_list;
+}
+function handleFileUpload1(event) {
+  const file = event.target.files?.[0];
+  if (!file) {
+    console.error("ファイルが選択されていません。");
+    return;
+  }
 
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const textContent = e.target.result;
+    if (typeof textContent !== "string") {
+      console.error("無効なファイル内容");
+      return;
+    }
+    const class_info_list = mitaniParseClass(textContent);
+    console.dir(class_info_list);
+  };
+  reader.readAsText(file);
+}
+function handleFileUpload2(event) {
+  const file = event.target.files?.[0];
+  if (!file) {
+    console.error("ファイルが選択されていません。");
+    return;
+  }
+  console.log("!!!!");
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const textContent = e.target.result;
+    if (typeof textContent !== "string") {
+      console.error("無効なファイル内容");
+      return;
+    }
+    const student_info_list = mitaniParseStudent(textContent);
+    console.dir(student_info_list[0]["学籍番号"]);
+    const displayList = [];
+    for (const student_infomation of student_info_list) {
+      const studentId = parseInt(student_infomation["学籍番号"]);
+      const enrollYear = parseInt(student_infomation["入学年度"]);
+      const grade = parseInt(student_infomation["入学年次"]);
+      if(enrollYear - grade +1 <= 2024){
+        displayList.push(student_infomation);
+      }
+    }
+    console.dir(displayList);
+    const ul = document.createElement("ul");
+    for(const displayItem of displayList){
+      const li = document.createElement("li");
+      const span1 = document.createElement("span");
+      const span2 = document.createElement("span");
+      const span3 = document.createElement("span");
+      span1.textContent = displayItem["学籍番号"];
+      span2.textContent = displayItem["学生氏名"];
+      span3.textContent = "  ";
+      console.dir(displayItem["学生氏名"]);
+      li.appendChild(span1);
+      li.appendChild(span3);
+      li.appendChild(span2);
+      ul.appendChild(li);
+    }
+    output.innerHTML = "";
+    output.appendChild(ul);
+  };
+  reader.readAsText(file);
+}
 function main() {
-  const class_info = mustGetElementById("class_info");
-  const student_info = mustGetElementById("student_info");
-  console.dir(class_info);
+  // console.dir(class_info);
   if (!(class_info instanceof HTMLInputElement)) {
     throw new Error("bad selectFood.value");
   }
-  const class_info_list = mitaniParseClass(csvData);
-  console.dir(class_info_list);
+
+  const file = class_info.files[0];
+  if (!(file !== null)) {
+    throw new Error("bad selectFood.value");
+  }
+  // const class_info_list = mitaniParseClass(class_info.value);
 }
 main();
+document.addEventListener("DOMContentLoaded", () => {
+  class_info.addEventListener("change", handleFileUpload1);
+});
+document.addEventListener("DOMContentLoaded", () => {
+  student_info.addEventListener("change", handleFileUpload2);
+});
