@@ -1,4 +1,4 @@
- // @ts-check
+// // @ts-check
 import { parse } from "../libs/csv-parse/dist/esm/sync.js";
 
 // const records = parse(csvData, {
@@ -63,18 +63,15 @@ function mitaniParseStudent(s) {
   }
   return class_list;
 }
-
 function handleFileUpload(event) {
   const file = event.target.files?.[0];
   if (!file) {
     output.innerHTML = "多分ふあいるが違う！！";
     return;
   }
+  console.log("!!!!");
   const reader = new FileReader();
   reader.onload = (e) => {
-    if(e.target === null){
-      throw new Error("e.target");
-    }
     const textContent = e.target.result;
     if (typeof textContent !== "string") {
       output.innerHTML = "多分ふあいるが違う！！";
@@ -125,5 +122,7 @@ function handleFileUpload(event) {
   };
   reader.readAsText(file);
 }
-student_info.addEventListener("change", handleFileUpload);
 
+document.addEventListener("DOMContentLoaded", () => {
+  student_info.addEventListener("change", handleFileUpload);
+});
