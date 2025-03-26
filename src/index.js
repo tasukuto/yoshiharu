@@ -1,95 +1,129 @@
-console.log('お゛は゛よ゛う゛さ゛ん゛')
+ // @ts-check
+import { parse } from "../libs/csv-parse/dist/esm/sync.js";
 
-// const class_info = document.getElementById('class_info')
-// const student_info = document.getElementById('student_info')
+// const records = parse(csvData, {
+//   columns: true,         // ヘッダーをキーとして使用
+//   skip_empty_lines: true // 空行を無視
+// });
+// console.dir(records);
 
-// console.log(class_info)
-// console.log(student_info)
-
-THRESHOLD = 2025
-
-const class_info = [
-  { '科目番号': 6501102, '学籍番号': 202710025 },
-  { '科目番号': 6501102, '学籍番号': 202710054 },
-  { '科目番号': 6501102, '学籍番号': 202710015 },
-  { '科目番号': 6501102, '学籍番号': 202710010 },
-  { '科目番号': 6501102, '学籍番号': 202713003 },
-  { '科目番号': 6501102, '学籍番号': 202713055 },
-  { '科目番号': 6501102, '学籍番号': 202713036 },
-  { '科目番号': 6501102, '学籍番号': 202610000 },
-  { '科目番号': 6501102, '学籍番号': 202610024 },
-  { '科目番号': 6501102, '学籍番号': 202610029 },
-  { '科目番号': 6501102, '学籍番号': 202613097 },
-  { '科目番号': 6501102, '学籍番号': 202613081 },
-  { '科目番号': 6501102, '学籍番号': 202110098 },
-  { '科目番号': 6501102, '学籍番号': 202510049 },
-  { '科目番号': 6501102, '学籍番号': 202513059 },
-  { '科目番号': 6501202, '学籍番号': 202710090 },
-  { '科目番号': 6501202, '学籍番号': 202710031 },
-  { '科目番号': 6501202, '学籍番号': 202710004 },
-  { '科目番号': 6501202, '学籍番号': 202713023 },
-  { '科目番号': 6501202, '学籍番号': 202713050 },
-  { '科目番号': 6501202, '学籍番号': 202713035 },
-  { '科目番号': 6501202, '学籍番号': 202610043 },
-  { '科目番号': 6501202, '学籍番号': 202610048 },
-  { '科目番号': 6501202, '学籍番号': 202613006 },
-  { '科目番号': 6501202, '学籍番号': 202613053 },
-  { '科目番号': 6501202, '学籍番号': 202510011 },
-  { '科目番号': 6501202, '学籍番号': 202513075 },
-  { '科目番号': 6501202, '学籍番号': 202110020 }
-];
-
-const student_info = [
-    { '学籍番号': 202710025, '入学年度': 2027, '入学年次': 1 },
-    { '学籍番号': 202710054, '入学年度': 2027, '入学年次': 1 },
-    { '学籍番号': 202710015, '入学年度': 2027, '入学年次': 1 },
-    { '学籍番号': 202710010, '入学年度': 2027, '入学年次': 1 },
-    { '学籍番号': 202713003, '入学年度': 2027, '入学年次': 3 },
-    { '学籍番号': 202713055, '入学年度': 2027, '入学年次': 3 },
-    { '学籍番号': 202713036, '入学年度': 2027, '入学年次': 3 },
-    { '学籍番号': 202610000, '入学年度': 2026, '入学年次': 1 },
-    { '学籍番号': 202610024, '入学年度': 2026, '入学年次': 1 },
-    { '学籍番号': 202610029, '入学年度': 2026, '入学年次': 1 },
-    { '学籍番号': 202613097, '入学年度': 2026, '入学年次': 3 },
-    { '学籍番号': 202613081, '入学年度': 2026, '入学年次': 3 },
-    { '学籍番号': 202110098, '入学年度': 2021, '入学年次': 1 },
-    { '学籍番号': 202510049, '入学年度': 2025, '入学年次': 1 },
-    { '学籍番号': 202513059, '入学年度': 2025, '入学年次': 3 },
-    { '学籍番号': 202710090, '入学年度': 2027, '入学年次': 1 },
-    { '学籍番号': 202710031, '入学年度': 2027, '入学年次': 1 },
-    { '学籍番号': 202710004, '入学年度': 2027, '入学年次': 1 },
-    { '学籍番号': 202713023, '入学年度': 2027, '入学年次': 3 },
-    { '学籍番号': 202713050, '入学年度': 2027, '入学年次': 3 },
-    { '学籍番号': 202713035, '入学年度': 2027, '入学年次': 3 },
-    { '学籍番号': 202610043, '入学年度': 2026, '入学年次': 1 },
-    { '学籍番号': 202610048, '入学年度': 2026, '入学年次': 1 },
-    { '学籍番号': 202613006, '入学年度': 2026, '入学年次': 3 },
-    { '学籍番号': 202613053, '入学年度': 2026, '入学年次': 3 },
-    { '学籍番号': 202510011, '入学年度': 2025, '入学年次': 1 },
-    { '学籍番号': 202513075, '入学年度': 2025, '入学年次': 3 },
-    { '学籍番号': 202110020, '入学年度': 2021, '入学年次': 1 }
-];
-  
-const num_class = class_info[0]['科目番号']
-
-const students_u2025 = []
-
-for (let c_info of class_info) {
-  let num_student = 0;
-  for (let s_info of student_info ) {
-    if (c_info['学籍番号'] == s_info['学籍番号']) {
-      num_student = s_info['学籍番号'];
-      year_applied = s_info['入学年度'] - s_info['入学年次']
-      if (year_applied < THRESHOLD) {
-        students_u2025.push(s_info['学籍番号'])
-      }
-      break;
-    }
+/**
+ * @param {string} id
+ * @returns {HTMLElement}
+ */
+function mustGetElementById(id) {
+  const object = document.getElementById(id);
+  if (object === null) {
+    throw new Error(`${id} not found`);
   }
-  if (num_student == 0) {
-    console.log(`${c_info['学籍番号']} is NOT included in students list.`)
-  }
+  return object;
 }
 
-console.log(students_u2025)
+/**
+ * @param {string} selector
+ * @returns {Element}
+ */
+function mustQuerySelector(selector) {
+  const object = document.querySelector(selector);
+  if (object === null) {
+    throw new Error(`${selector} not found`);
+  }
+  return object;
+}
+const student_info = mustGetElementById("student_info");
+const output = mustGetElementById("output");
+
+/**
+ * @param {string} s
+ * @returns {any}
+ */
+function mitaniParseStudent(s) {
+  const class_list = parse(s, {
+    columns: true,
+    skip_empty_lines: true,
+  });
+  if (!Array.isArray(class_list)) {
+    return undefined;
+  }
+  for (const class_info of class_list) {
+    if (
+      !(
+        typeof class_info === "object" &&
+        Object.entries(class_info).length === 4
+      )
+    ) {
+      console.dir("!a");
+      return undefined;
+    }
+    for (const class_element of Object.values(class_info)) {
+      if (typeof class_element !== "string") {
+        return undefined;
+      }
+    }
+  }
+  return class_list;
+}
+
+function handleFileUpload(event) {
+  const file = event.target.files?.[0];
+  if (!file) {
+    output.innerHTML = "多分ふあいるが違う！！";
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    if(e.target === null){
+      throw new Error("e.target");
+    }
+    const textContent = e.target.result;
+    if (typeof textContent !== "string") {
+      output.innerHTML = "多分ふあいるが違う！！";
+      return;
+    }
+    const student_info_list = mitaniParseStudent(textContent);
+    if (
+      student_info_list === undefined ||
+      student_info_list[0]["学籍番号"] === undefined ||
+      student_info_list[0]["入学年度"] === undefined ||
+      student_info_list[0]["入学年次"] === undefined ||
+      student_info_list[0]["学生氏名"] === undefined
+    ) {
+      output.innerHTML = "多分ふあいるが違う！！";
+    } else {
+      console.dir(student_info_list[0]["学籍番号"]);
+      const displayList = [];
+      for (const student_infomation of student_info_list) {
+        const enrollYear = parseInt(student_infomation["入学年度"]);
+        const grade = parseInt(student_infomation["入学年次"]);
+        if (enrollYear - grade + 1 <= 2024) {
+          displayList.push(student_infomation);
+        }
+      }
+      console.dir(displayList);
+      const ul = document.createElement("ul");
+      if (displayList.length === 0) {
+        output.innerHTML = "おや、いないようじゃ";
+      } else {
+        for (const displayItem of displayList) {
+          const li = document.createElement("li");
+          const span1 = document.createElement("span");
+          const span2 = document.createElement("span");
+          const span3 = document.createElement("span");
+          span1.textContent = displayItem["学籍番号"];
+          span2.textContent = displayItem["学生氏名"];
+          span3.textContent = "  ";
+          console.dir(displayItem["学生氏名"]);
+          li.appendChild(span1);
+          li.appendChild(span3);
+          li.appendChild(span2);
+          ul.appendChild(li);
+        }
+        output.innerHTML = "";
+        output.appendChild(ul);
+      }
+    }
+  };
+  reader.readAsText(file);
+}
+student_info.addEventListener("change", handleFileUpload);
 
