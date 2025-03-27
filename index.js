@@ -1,5 +1,6 @@
 // // @ts-check
-import { parse } from "./libs/csv-parse/dist/esm/sync.js";
+import { parse } from "./libs/csv-parse/dist/esm/sync.js";  
+import * as XLSX from './libs/xlsx-parse/xlsx.mjs';
 
 // const records = parse(csvData, {
 //   columns: true,         // ヘッダーをキーとして使用
