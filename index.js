@@ -31,8 +31,11 @@ function mustQuerySelector(selector) {
   }
   return object;
 }
+
 const student_info = mustGetElementById("student_info");
-const output = mustGetElementById("output");
+const courses_info = mustGetElementById("courses_info");
+const student_info_output = mustGetElementById("student_info_output");
+const courses_info_output = mustGetElementById("courses_info_output");
 
 /**
  * @param {string} s
@@ -65,34 +68,22 @@ function mitaniParseStudent(s) {
   return class_list;
 }
 
-function handleFileUpload(event) {
+function handleCsvFileUpload(event) {
   const file = event.target.files?.[0];
   if (!file) {
-    output.innerHTML = "多分ふあいるが違う！！";
+    student_info_output.innerHTML = "多分ふあいるが違う！！";
     return;
   }
-  const fileName = file.name.toLowerCase()
+  console.log("!!!!");
   const reader = new FileReader();
 
   reader.onload = (e) => {
-    let student_info_list;
-    if (fileName.endsWith(".csv")) {
-      const textContent = e.target.result;
-      if (typeof textContent !== "string") {
-        output.innerHTML = "多分ふあいるが違う！！";
-        return;
-      }
-      student_info_list = mitaniParseStudent(textContent);
-    } else if (fileName.endsWith(".xlsx")) {
-      const arrayBufferContext = e.target.result;
-      const workbook = XLSX.read(arrayBufferContext, {type: "array"});
-      console.log("workbook");
-      console.log(workbook);
-      return;
-    } else {
-      output.innerHTML = "こら、csvファイルかxlsxファイルを使うのじゃ";
+    const textContent = e.target.result;
+    if (typeof textContent !== "string") {
+      student_info_output.innerHTML = "多分ふあいるが違う！！";
       return;
     }
+    const student_info_list = mitaniParseStudent(textContent);
     if (
       student_info_list === undefined ||
       student_info_list[0]["学籍番号"] === undefined ||
@@ -100,7 +91,7 @@ function handleFileUpload(event) {
       student_info_list[0]["入学年次"] === undefined ||
       student_info_list[0]["学生氏名"] === undefined
     ) {
-      output.innerHTML = "多分ふあいるが違う！！";
+      student_info_output.innerHTML = "多分ふあいるが違う！！";
     } else {
       console.dir(student_info_list[0]["学籍番号"]);
       const displayList = [];
@@ -114,7 +105,7 @@ function handleFileUpload(event) {
       console.dir(displayList);
       const ul = document.createElement("ul");
       if (displayList.length === 0) {
-        output.innerHTML = "おや、いないようじゃ";
+        student_info_output.innerHTML = "おや、いないようじゃ";
       } else {
         for (const displayItem of displayList) {
           const li = document.createElement("li");
@@ -130,22 +121,47 @@ function handleFileUpload(event) {
           li.appendChild(span2);
           ul.appendChild(li);
         }
-        output.innerHTML = "";
-        output.appendChild(ul);
+        student_info_output.innerHTML = "";
+        student_info_output.appendChild(ul);
       }
     }
   };
 
-  if (fileName.endsWith(".csv")) {
-    reader.readAsText(file);
-  } else if (fileName.endsWith(".xlsx")) {
-    reader.readAsArrayBuffer(file);
-  } else {
-    output.innerHTML = "こら、csvファイルかxlsxファイルを使うのじゃ";
+  reader.readAsText(file);
+}
+
+function handleXlsxFileUpload(event) {
+  const file = event.target.files?.[0];
+  if (!file) {
+    courses_info_output.innerHTML = "多分ふあいるが違う！！";
     return;
   }
+  const fileName = file.name.toLowerCase();
+  const reader = new FileReader();
+
+  reader.onload = (e) => {
+    const arrayBufferContext = e.target.result;
+    if (!arrayBufferContext) {
+      courses_info_output.innerHTML = "xlsxファイルの中身が読めないのぅ";
+      return;
+    }
+    if (!fileName.endsWith(".xlsx")) {
+      courses_info_output.innerHTML = "xlsxファイルをよこすのじゃ";
+      return;
+    }
+    const workbook = XLSX.read(arrayBufferContext, { type: "array" });
+    console.log(workbook);
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const data = XLSX.utils.sheet_to_json(worksheet, { defval: "", raw: false });
+    console.log(typeof data);
+    console.log(data);
+  }
+
+  reader.readAsArrayBuffer(file);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  student_info.addEventListener("change", handleFileUpload);
+  student_info.addEventListener("change", handleCsvFileUpload);
+  courses_info.addEventListener("change", handleXlsxFileUpload);
 });
