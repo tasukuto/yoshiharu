@@ -64,21 +64,35 @@ function mitaniParseStudent(s) {
   }
   return class_list;
 }
+
 function handleFileUpload(event) {
   const file = event.target.files?.[0];
   if (!file) {
     output.innerHTML = "多分ふあいるが違う！！";
     return;
   }
-  console.log("!!!!");
+  const fileName = file.name.toLowerCase()
   const reader = new FileReader();
+
   reader.onload = (e) => {
-    const textContent = e.target.result;
-    if (typeof textContent !== "string") {
-      output.innerHTML = "多分ふあいるが違う！！";
+    let student_info_list;
+    if (fileName.endsWith(".csv")) {
+      const textContent = e.target.result;
+      if (typeof textContent !== "string") {
+        output.innerHTML = "多分ふあいるが違う！！";
+        return;
+      }
+      student_info_list = mitaniParseStudent(textContent);
+    } else if (fileName.endsWith(".xlsx")) {
+      const arrayBufferContext = e.target.result;
+      const workbook = XLSX.read(arrayBufferContext, {type: "array"});
+      console.log("workbook");
+      console.log(workbook);
+      return;
+    } else {
+      output.innerHTML = "こら、csvファイルかxlsxファイルを使うのじゃ";
       return;
     }
-    const student_info_list = mitaniParseStudent(textContent);
     if (
       student_info_list === undefined ||
       student_info_list[0]["学籍番号"] === undefined ||
@@ -121,7 +135,15 @@ function handleFileUpload(event) {
       }
     }
   };
-  reader.readAsText(file);
+
+  if (fileName.endsWith(".csv")) {
+    reader.readAsText(file);
+  } else if (fileName.endsWith(".xlsx")) {
+    reader.readAsArrayBuffer(file);
+  } else {
+    output.innerHTML = "こら、csvファイルかxlsxファイルを使うのじゃ";
+    return;
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
