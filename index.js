@@ -131,7 +131,13 @@ function handleCsvFileUpload(event) {
 }
 
 function mitaniPerseCourses(arrayBufferContext) {
-  const workbook = XLSX.read(arrayBufferContext, { type: "array" });
+  let workbook;
+  try {
+    workbook = XLSX.read(arrayBufferContext, { type: "array" });
+  } catch (err) {
+    console.error("XLSXでの読み込みエラー:", err);
+    return undefined;
+  }
   const courses_info_list = [];
   for (const sheetName of workbook.SheetNames) {
     const workSheet = workbook.Sheets[sheetName];
@@ -143,6 +149,10 @@ function mitaniPerseCourses(arrayBufferContext) {
       raw: false
     });
     const course_id = header[0]["C"];
+    if (!/^65\d{5}$/.test(course_id)) {
+      console.warn(`「${sheetName}」の科目番号がデータサイエンスじゃない:`, course_id);
+      return undefined;
+    }
 
     const data = XLSX.utils.sheet_to_json(workSheet, {
       range: 4,
