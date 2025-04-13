@@ -130,6 +130,37 @@ function handleCsvFileUpload(event) {
   reader.readAsText(file);
 }
 
+function mitaniPerseCourses(arrayBufferContext) {
+  const workbook = XLSX.read(arrayBufferContext, { type: "array" });
+  const courses_info_list = [];
+  for (const sheetName of workbook.SheetNames) {
+    const workSheet = workbook.Sheets[sheetName];
+
+    const header = XLSX.utils.sheet_to_json(workSheet, {
+      header: "A",
+      range: "B2:F3",
+      defval: "",
+      raw: false
+    });
+    const course_id = header[0]["C"];
+
+    const data = XLSX.utils.sheet_to_json(workSheet, {
+      range: 4,
+      defval: "",
+      raw: false
+    });
+    const students_ids = data
+    .map(row => row["学籍番号"])
+    .filter(id => /^\d{9}$/.test(id));
+
+    courses_info_list.push({
+      "科目番号": course_id,
+      "学籍番号": students_ids
+    });
+  }
+  return courses_info_list;
+}
+
 function handleXlsxFileUpload(event) {
   const file = event.target.files?.[0];
   if (!file) {
@@ -149,13 +180,8 @@ function handleXlsxFileUpload(event) {
       courses_info_output.innerHTML = "xlsxファイルをよこすのじゃ";
       return;
     }
-    const workbook = XLSX.read(arrayBufferContext, { type: "array" });
-    console.log(workbook);
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-    const data = XLSX.utils.sheet_to_json(worksheet, { defval: "", raw: false });
-    console.log(typeof data);
-    console.log(data);
+    const courses_info_list = mitaniPerseCourses(arrayBufferContext);
+    console.log(courses_info_list);
   }
 
   reader.readAsArrayBuffer(file);
