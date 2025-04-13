@@ -130,7 +130,7 @@ function handleCsvFileUpload(event) {
   reader.readAsText(file);
 }
 
-function mitaniPerseCourses(arrayBufferContext) {
+function mitaniParseCourses(arrayBufferContext) {
   let workbook;
   try {
     workbook = XLSX.read(arrayBufferContext, { type: "array" });
@@ -190,7 +190,7 @@ function handleXlsxFileUpload(event) {
       courses_info_output.innerHTML = "xlsxファイルをよこすのじゃ";
       return;
     }
-    const courses_info_list = mitaniPerseCourses(arrayBufferContext);
+    const courses_info_list = mitaniParseCourses(arrayBufferContext);
     console.log(courses_info_list);
   }
 
