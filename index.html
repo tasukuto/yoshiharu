@@ -6,8 +6,15 @@
     <h1>よしはる</h1>
     <img src="./static/images/yoshiharu.png" alt="yoshiharu">
     <br>
-    <input type="file" id="student_info" accept=".csv" />
-    <div id="output"></div>
+    <label for="student_info_element">学籍情報:</label>
+    <input type="file" id="student_info_element" accept=".csv" />
+    <br>
+    <label for="courses_info_element">班別名簿:</label>
+    <input type="file" id="courses_info_element" accept=".xlsx" />
+    <br>
+    <button id="verify_element">確認</button>
+    <div id="student_info_output"></div>
+    <div id="courses_info_output"></div>
     <script type="module" src="index.js"></script>
   </body>
 </html>
