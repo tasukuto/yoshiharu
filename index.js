@@ -36,6 +36,7 @@ const students_info_element = mustGetElementById("students_info_element");
 const courses_info_element = mustGetElementById("courses_info_element");
 const emails_info_element = mustGetElementById("emails_info_element");
 const verify_element = mustGetElementById("verify_element");
+const error_message = mustGetElementById("error_message");
 const output = mustGetElementById("output");
 
 /**
@@ -140,7 +141,7 @@ function generateEmailContentsInfo(course_info, students_info_by_student_id, ema
   for (const student_id of course_info["学籍番号"]) {
     const student_info_taking_course = students_info_by_student_id.get(student_id);
     if (!student_info_taking_course) {
-      output.innerHTML += `${student_id}は学籍情報に載っていない学生のようじゃ\n`
+      error_message.innerHTML += `${student_id}は学籍情報に載っていない学生のようじゃ\n`
       return undefined;
     }
     const enrollYear = parseInt(student_info_taking_course["入学年度"]);
@@ -158,34 +159,35 @@ function generateEmailContentsInfo(course_info, students_info_by_student_id, ema
   return email_contents_info;
 }
 
-function renderStudentList(course_id, displayList, container) {
-  const div = document.createElement("div");
-  const title = document.createElement("h3");
-  title.textContent = `科目番号：${course_id}`
-  div.appendChild(title);
+function createEmailBody(email_contents_info) {
 
-  const ul = document.createElement("ul");
-  if (displayList.length === 0) {
-    const empty = document.createElement("p");
-    empty.textContent = "おや、いないようじゃ";
-    div.appendChild(empty);
-  } else {
-    for (const displayItem of displayList) {
-      const li = document.createElement("li");
-      const span1 = document.createElement("span");
-      const span2 = document.createElement("span");
-      const span3 = document.createElement("span");
-      span1.textContent = displayItem["学籍番号"];
-      span2.textContent = displayItem["学生氏名"];
-      span3.textContent = "  ";
-      li.appendChild(span1);
-      li.appendChild(span3);
-      li.appendChild(span2);
-      ul.appendChild(li);
+}
+
+function createEmailBottun(output, email_contents_info) {
+  const course_id = email_contents_info["科目番号"];
+  const email_address = email_contents_info["アドレス"];
+  // const email_body = createEmailBody(email_contents_info);
+  const email_body = "createEmailBody(email_contents_info)";
+
+  const storage_key = `email_sent_${course_id}`;
+  const is_already_sent = localStorage.getItem(storage_key) === "true";
+  
+  const button = document.createElement("button");
+  button.textContent = is_already_sent ? `送信済！！！` : `メールする`;
+
+  button.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(email_body);
+      window.location.href = `mailto:${encodeURIComponent(email_address)}`;
+
+      localStorage.setItem(storage_key, "true");
+      button.textContent = `送信済！！！`;
+    } catch (err) {
+      console.error("メール処理エラー:", err);
     }
-    div.appendChild(ul);
-  }
-  container.appendChild(div);
+  });
+
+  return button;
 }
 
 async function handleVerify() {
@@ -203,7 +205,7 @@ async function handleVerify() {
     if (!studentsFile) {
       error_text = "「学籍情報」" + error_text;
     }
-    output.innerHTML += error_text;
+    error_message.innerHTML += error_text;
     return;
   }
 
@@ -219,24 +221,19 @@ async function handleVerify() {
 
     const students_info_list = mitaniParseStudents(studentsText);
     if (!students_info_list) {
-      output.innerHTML += "学籍情報が正しくないようじゃ\n";
+      error_message.innerHTML += "「学籍情報」が正しくないようじゃ\n";
       return;
     }
     const courses_info_list = mitaniParseCourses(coursesBuffer, course_name);
     if (!courses_info_list) {
-      output.innerHTML += "班別名簿が正しくないようじゃ\n";
+      error_message.innerHTML += "「班別名簿」が正しくないようじゃ\n";
       return;
     }
     const emails_info_list = mitaniParseEmails(emailsBuffer, course_name);
     if (!emails_info_list) {
-      output.innerHTML += "メールアドレス一覧が正しくないようじゃ\n";
+      error_message.innerHTML += "「メールアドレス一覧」が正しくないようじゃ\n";
       return;
     }
-
-    console.log(students_info_list);
-    console.log(courses_info_list);
-    console.log(emails_info_list);
-
     const students_info_by_student_id = new Map(students_info_list.map(
       student_info => [student_info["学籍番号"], student_info]
     ));
@@ -245,23 +242,48 @@ async function handleVerify() {
     ));
 
     const email_contents_info_list = [];
-
     for (const course_info of courses_info_list) {
       const email_contents_info = generateEmailContentsInfo(course_info, students_info_by_student_id, emails_info_by_course_id);
       console.log(email_contents_info);
-      email_contents_info_list.push(email_contents_info);
-      // renderStudentList(course_info["科目番号"], displayList, courses_info_output)
+      if (email_contents_info["学生情報"].length > 0) {
+        email_contents_info_list.push(email_contents_info);
+      }
     }
-    console.log(email_contents_info_list);  
+    console.log(email_contents_info_list);
+    const announcement = document.createElement('h2');
+    announcement.textContent = `${course_name}の2024年度以下の学生`;
+    output.appendChild(announcement);
+
+    const table = document.createElement("table");
+    table.border = "1";
+    table.style.borderCollapse = "collapse";
+    const header = table.insertRow();
+    ["科目番号", "担当教員", "メールアドレス"].forEach(text => {
+      const th = document.createElement("th");
+      th.textContent = text;
+      th.style.padding = "10px";
+      header.appendChild(th);
+    });
+    for (const email_contents_info of email_contents_info_list) {
+      const row = table.insertRow();
+      const td_course_id = row.insertCell();
+      td_course_id.textContent = email_contents_info["科目番号"];
+      const td_teacher = row.insertCell();
+      td_teacher.textContent = email_contents_info["担当教員"];
+      const td_email_button = row.insertCell();
+      td_email_button.appendChild(createEmailBottun (output, email_contents_info));
+    }
+    output.appendChild(table);
 
   } catch (err) {
     console.error(err);
-    output.innerHTML += "ファイルの処理がうまくいかんぞ\n";
+    error_message.innerHTML += "ファイルの処理がうまくいかんぞ\n";
   }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   verify_element.addEventListener("click", () => {
+    error_message.innerHTML = "";
     const studentsFile = students_info_element.files?.[0];
     const coursesFile = courses_info_element.files?.[0];
     const emailsFile = emails_info_element.files?.[0];
@@ -278,7 +300,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!studentsFile) {
         error_text = "「学籍情報」" + error_text;
       }
-      output.innerHTML += error_text;
+      error_message.innerHTML += error_text;
     }
   })
 });
