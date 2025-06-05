@@ -125,13 +125,37 @@ function mitaniParseEmails(arrayBufferContext, course_name) {
     raw: false
   });
   const emails_info_list = data
-    .filter(row => row[1] === "データサイエンス")
+    .filter(row => row[1] === course_name)
     .map(row => ({
-      科目番号: row[0],
-      担当教員: row[8],
-      アドレス: row[9]
+      "科目番号": row[0],
+      "担当教員": row[8],
+      "アドレス": row[9]
     }));
   return emails_info_list;
+}
+
+function generateEmailContentsInfo(course_info, students_info_by_student_id, emails_info_by_course_id) {
+  const student_info_taking_course_list = []
+  const emails_info = emails_info_by_course_id.get(course_info["科目番号"]);
+  for (const student_id of course_info["学籍番号"]) {
+    const student_info_taking_course = students_info_by_student_id.get(student_id);
+    if (!student_info_taking_course) {
+      output.innerHTML += `${student_id}は学籍情報に載っていない学生のようじゃ\n`
+      return undefined;
+    }
+    const enrollYear = parseInt(student_info_taking_course["入学年度"]);
+    const grade = parseInt(student_info_taking_course["入学年次"]);
+    if (enrollYear - grade + 1 <= 2024) {
+      student_info_taking_course_list.push(student_info_taking_course);
+    }
+  }
+  const email_contents_info = {
+    "科目番号": course_info["科目番号"],
+    "担当教員": emails_info["担当教員"],
+    "アドレス": emails_info["アドレス"],
+    "学生情報": student_info_taking_course_list
+  }
+  return email_contents_info;
 }
 
 function renderStudentList(course_id, displayList, container) {
@@ -169,7 +193,7 @@ async function handleVerify() {
   const coursesFile = courses_info_element.files?.[0];
   const emailsFile = emails_info_element.files?.[0];
   if (!(studentsFile && coursesFile && emailsFile)) {
-    let error_text = "がないみたいじゃ";
+    let error_text = "がないみたいじゃ\n";
     if (!emailsFile) {
       error_text = "「メールアドレス一覧」" + error_text;
     }
@@ -179,7 +203,7 @@ async function handleVerify() {
     if (!studentsFile) {
       error_text = "「学籍情報」" + error_text;
     }
-    output.innerHTML = error_text;
+    output.innerHTML += error_text;
     return;
   }
 
@@ -195,17 +219,17 @@ async function handleVerify() {
 
     const students_info_list = mitaniParseStudents(studentsText);
     if (!students_info_list) {
-      output.innerHTML = "学籍情報が正しくないようじゃ";
+      output.innerHTML += "学籍情報が正しくないようじゃ\n";
       return;
     }
     const courses_info_list = mitaniParseCourses(coursesBuffer, course_name);
     if (!courses_info_list) {
-      output.innerHTML = "班別名簿が正しくないようじゃ";
+      output.innerHTML += "班別名簿が正しくないようじゃ\n";
       return;
     }
     const emails_info_list = mitaniParseEmails(emailsBuffer, course_name);
     if (!emails_info_list) {
-      output.innerHTML = "メールアドレス一覧が正しくないようじゃ";
+      output.innerHTML += "メールアドレス一覧が正しくないようじゃ\n";
       return;
     }
 
@@ -213,30 +237,26 @@ async function handleVerify() {
     console.log(courses_info_list);
     console.log(emails_info_list);
 
-    const student_id_map = new Map(students_info_list.map(
+    const students_info_by_student_id = new Map(students_info_list.map(
       student_info => [student_info["学籍番号"], student_info]
     ));
+    const emails_info_by_course_id = new Map(emails_info_list.map(
+      emails_info => [emails_info["科目番号"], emails_info]
+    ));
+
+    const email_contents_info_list = [];
+
     for (const course_info of courses_info_list) {
-      const displayList = [];
-      for (const student_id of course_info["学籍番号"]) {
-        const student_info_taking_course = student_id_map.get(student_id);
-        if (!student_info_taking_course) {
-          output.innerHTML = "学籍情報に載っていない学生がいるようじゃ"
-          return;
-        }
-        const enrollYear = parseInt(student_info_taking_course["入学年度"]);
-        const grade = parseInt(student_info_taking_course["入学年次"]);
-        if (enrollYear - grade + 1 <= 2024) {
-          displayList.push(student_info_taking_course);
-        }
-      }
-      console.log(course_info["科目番号"]);
-      console.log(displayList);
-      renderStudentList(course_info["科目番号"], displayList, courses_info_output)
+      const email_contents_info = generateEmailContentsInfo(course_info, students_info_by_student_id, emails_info_by_course_id);
+      console.log(email_contents_info);
+      email_contents_info_list.push(email_contents_info);
+      // renderStudentList(course_info["科目番号"], displayList, courses_info_output)
     }
+    console.log(email_contents_info_list);  
+
   } catch (err) {
     console.error(err);
-    output.innerHTML = "ファイルの処理がうまくいかんぞ";
+    output.innerHTML += "ファイルの処理がうまくいかんぞ\n";
   }
 }
 
@@ -248,7 +268,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (studentsFile && coursesFile && emailsFile) {
       handleVerify();
     } else {
-      let error_text = "がないみたいじゃ";
+      let error_text = "がないみたいじゃ\n";
       if (!emailsFile) {
         error_text = "「メールアドレス一覧」" + error_text;
       }
@@ -258,7 +278,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!studentsFile) {
         error_text = "「学籍情報」" + error_text;
       }
-      output.innerHTML = error_text;
+      output.innerHTML += error_text;
     }
   })
 });
