@@ -187,8 +187,8 @@ function createEmailBottunElement(email_contents_info, course_name) {
   const email_body = createEmailBody(email_contents_info, course_name);
   const email_subject = `【${email_contents_info["科目番号"]}】${course_name}履修者の評価方法の確認のお願い`
 
-  const storage_key = `email_sent_${course_id}`;
-  const is_already_sent = localStorage.getItem(storage_key) === "true";
+  const storage_key_for_button = `email_sent_${course_id}`;
+  const is_already_sent = localStorage.getItem(storage_key_for_button) === "true";
   
   const button = document.createElement("button");
   button.textContent = is_already_sent ? `送信済！！！` : `メールする`;
@@ -199,7 +199,7 @@ function createEmailBottunElement(email_contents_info, course_name) {
 
       window.location.href = `mailto:${encodeURIComponent(email_address)}?subject=${encodeURIComponent(email_subject)}`;
 
-      localStorage.setItem(storage_key, "true");
+      localStorage.setItem(storage_key_for_button, "true");
       button.textContent = `送信済！！！`;
     } catch (err) {
       console.error("メール処理エラー:", err);
@@ -293,6 +293,8 @@ async function handleVerify() {
       td_email_button.appendChild(createEmailBottunElement(email_contents_info, course_name));
     }
     output.appendChild(table);
+    const storage_key_for_table = "table";
+    localStorage.setItem(storage_key_for_table, output.innerHTML);
 
   } catch (err) {
     console.error(err);
@@ -301,8 +303,17 @@ async function handleVerify() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  const storage_key_for_table = "table";
+  const is_already_made = localStorage.getItem(storage_key_for_table);
+  if (is_already_made) {
+    output.innerHTML = is_already_made;
+  }
+
   verify_element.addEventListener("click", () => {
     error_message.innerHTML = "";
+    while (output.firstChild) {
+      output.removeChild(output.firstChild);
+    }
     const studentsFile = students_info_element.files?.[0];
     const coursesFile = courses_info_element.files?.[0];
     const emailsFile = emails_info_element.files?.[0];
