@@ -159,15 +159,33 @@ function generateEmailContentsInfo(course_info, students_info_by_student_id, ema
   return email_contents_info;
 }
 
-function createEmailBody(email_contents_info) {
+function createEmailBody(email_contents_info, course_name) {
+  const course_id = email_contents_info["科目番号"];
+  const teacher = email_contents_info["担当教員"];
+  const email_address = email_contents_info["アドレス"];
+  const student_info = email_contents_info["学生情報"];
 
+  const student_info_list_text = student_info.map(
+    s => `${s["学籍番号"]}　${s["学生氏名"]}`
+  ).join("\n");
+
+  return `
+${teacher}先生
+
+${course_name}（科目番号：${course_id}）について、A+～D評価で成績評価される学生がいます。
+該当する学生は以下の通りです。ご確認ください。
+
+${student_info_list_text}
+
+よろしくお願いいたします。
+  `.trim();
 }
 
-function createEmailBottun(output, email_contents_info) {
+function createEmailBottunElement(email_contents_info, course_name) {
   const course_id = email_contents_info["科目番号"];
   const email_address = email_contents_info["アドレス"];
-  // const email_body = createEmailBody(email_contents_info);
-  const email_body = "createEmailBody(email_contents_info)";
+  const email_body = createEmailBody(email_contents_info, course_name);
+  const email_subject = `【${email_contents_info["科目番号"]}】${course_name}履修者の評価方法の確認のお願い`
 
   const storage_key = `email_sent_${course_id}`;
   const is_already_sent = localStorage.getItem(storage_key) === "true";
@@ -178,7 +196,8 @@ function createEmailBottun(output, email_contents_info) {
   button.addEventListener("click", async () => {
     try {
       await navigator.clipboard.writeText(email_body);
-      window.location.href = `mailto:${encodeURIComponent(email_address)}`;
+
+      window.location.href = `mailto:${encodeURIComponent(email_address)}?subject=${encodeURIComponent(email_subject)}`;
 
       localStorage.setItem(storage_key, "true");
       button.textContent = `送信済！！！`;
@@ -271,7 +290,7 @@ async function handleVerify() {
       const td_teacher = row.insertCell();
       td_teacher.textContent = email_contents_info["担当教員"];
       const td_email_button = row.insertCell();
-      td_email_button.appendChild(createEmailBottun (output, email_contents_info));
+      td_email_button.appendChild(createEmailBottunElement(email_contents_info, course_name));
     }
     output.appendChild(table);
 
