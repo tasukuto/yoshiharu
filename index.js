@@ -188,6 +188,7 @@ function createEmailBottunElement(email_contents_info, course_name) {
   const email_subject = `【${email_contents_info["科目番号"]}】${course_name}履修者の評価方法の確認のお願い`
 
   const storage_key_for_button = `email_sent_${course_id}`;
+  const storage_key_for_table = "table";  
   const is_already_sent = localStorage.getItem(storage_key_for_button) === "true";
   
   const button = document.createElement("button");
@@ -201,6 +202,7 @@ function createEmailBottunElement(email_contents_info, course_name) {
 
       localStorage.setItem(storage_key_for_button, "true");
       button.textContent = `送信済！！！`;
+      localStorage.setItem(storage_key_for_table, output.innerHTML);
     } catch (err) {
       console.error("メール処理エラー:", err);
     }
