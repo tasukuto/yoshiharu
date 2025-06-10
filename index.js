@@ -40,34 +40,43 @@ const error_message = mustGetElementById("error_message");
 const output = mustGetElementById("output");
 
 /**
- * @param {string} s
- * @returns {any}
+ * @param {string} studentsText
+ * @returns {Array<{"学籍番号": string, "学生氏名": string, "入学年度": string, "入学年次": string}> | undefined}
  */
-function mitaniParseStudents(s) {
-  const class_list = parse(s, {
+function mitaniParseStudents(studentsText) {
+  const students_list = parse(studentsText, {
     columns: true,
     skip_empty_lines: true,
   });
-  if (!Array.isArray(class_list)) {
+
+  if (!Array.isArray(students_list)) {
     return undefined;
   }
-  for (const class_info of class_list) {
+  const student_info_list = [];
+
+  for (const row of students_list) {
+    const student_id = row["学籍番号"];
+    const student_name = row["学生氏名"];
+    const enroll_year = row["入学年度"];
+    const enroll_grade = row["入学年次"];
+
     if (
-      !(
-        typeof class_info === "object" &&
-        Object.entries(class_info).length === 4
-      )
+      typeof student_id !== "string" ||
+      typeof student_name !== "string" ||
+      typeof enroll_year !== "string" ||
+      typeof enroll_grade !== "string"
     ) {
-      console.dir("!a");
       return undefined;
     }
-    for (const class_element of Object.values(class_info)) {
-      if (typeof class_element !== "string") {
-        return undefined;
-      }
-    }
+
+    student_info_list.push({
+      "学籍番号": student_id,
+      "学生氏名": student_name,
+      "入学年度": enroll_year,
+      "入学年次": enroll_grade
+    });
   }
-  return class_list;
+  return student_info_list;
 }
 
 function mitaniParseCourses(arrayBufferContext, course_name) {
