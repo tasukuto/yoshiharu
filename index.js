@@ -38,6 +38,14 @@ const emails_info_element = mustGetElementById("emails_info_element");
 const verify_element = mustGetElementById("verify_element");
 const error_message = mustGetElementById("error_message");
 const output = mustGetElementById("output");
+const border_year = 2024; 
+
+function addErrorMessage(error_message_text) {
+  const error_message_element = document.createElement('p');
+  error_message_element.innerText = error_message_text;
+  error_message.appendChild(error_message_element);
+  return;
+}
 
 /**
  * @param {string} studentsText
@@ -50,6 +58,7 @@ function mitaniParseStudents(studentsText) {
   });
 
   if (!Array.isArray(students_list)) {
+    addErrorMessage("「学籍情報」のデータを解析できんぞ");
     return undefined;
   }
   const student_info_list = [];
@@ -66,6 +75,7 @@ function mitaniParseStudents(studentsText) {
       typeof enroll_year !== "string" ||
       typeof enroll_grade !== "string"
     ) {
+      addErrorMessage("「学籍情報」のデータが変じゃぞ");
       return undefined;
     }
 
@@ -75,6 +85,10 @@ function mitaniParseStudents(studentsText) {
       "入学年度": enroll_year,
       "入学年次": enroll_grade
     });
+  }
+  if (student_info_list.length === 0) {
+    addErrorMessage("「学籍情報」のデータがないぞ");
+    return undefined;
   }
   return student_info_list;
 }
@@ -117,6 +131,10 @@ function mitaniParseCourses(arrayBufferContext, course_name) {
       "学籍番号": students_ids
     });
   }
+  if (courses_info_list.length === 0) {
+    addErrorMessage("「履修情報」のデータがないぞ");
+    return undefined;
+  }
   return courses_info_list;
 }
 
@@ -125,7 +143,9 @@ function mitaniParseEmails(arrayBufferContext, course_name) {
   try {
     workbook = XLSX.read(arrayBufferContext, { type: "array" });
   } catch (err) {
-    console.error("XLSXの読み込みエラー:", err);
+    addErrorMessage("「メールアドレス一覧」のデータが解析できんぞ");
+    addErrorMessage(err);
+    console.error(err);
     return undefined;
   }
   const workSheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -141,6 +161,10 @@ function mitaniParseEmails(arrayBufferContext, course_name) {
       "担当教員": row[8],
       "アドレス": row[9]
     }));
+  if (emails_info_list.length === 0) {
+    addErrorMessage("「メールアドレス一覧」のデータがないぞ");
+    return undefined;
+  }
   return emails_info_list;
 }
 
@@ -150,12 +174,12 @@ function generateEmailContentsInfo(course_info, students_info_by_student_id, ema
   for (const student_id of course_info["学籍番号"]) {
     const student_info_taking_course = students_info_by_student_id.get(student_id);
     if (!student_info_taking_course) {
-      error_message.innerHTML += `${student_id}は学籍情報に載っていない学生のようじゃ\n`
+      addErrorMessage(`「学籍情報」に${student_id}は載っていないようじゃ`);
       return undefined;
     }
-    const enrollYear = parseInt(student_info_taking_course["入学年度"]);
+    const enroll_year = parseInt(student_info_taking_course["入学年度"]);
     const grade = parseInt(student_info_taking_course["入学年次"]);
-    if (enrollYear - grade + 1 <= 2024) {
+    if (enroll_year - grade + 1 <= border_year) {
       student_info_taking_course_list.push(student_info_taking_course);
     }
   }
@@ -171,7 +195,6 @@ function generateEmailContentsInfo(course_info, students_info_by_student_id, ema
 function createEmailBody(email_contents_info, course_name) {
   const course_id = email_contents_info["科目番号"];
   const teacher = email_contents_info["担当教員"];
-  const email_address = email_contents_info["アドレス"];
   const student_info = email_contents_info["学生情報"];
 
   const student_info_list_text = student_info.map(
@@ -190,7 +213,7 @@ ${student_info_list_text}
   `.trim();
 }
 
-function createEmailBottunElement(email_contents_info, course_name) {
+function createEmailButtonElement(email_contents_info, course_name) {
   const course_id = email_contents_info["科目番号"];
   const email_address = email_contents_info["アドレス"];
   const email_body = createEmailBody(email_contents_info, course_name);
@@ -213,7 +236,9 @@ function createEmailBottunElement(email_contents_info, course_name) {
       button.textContent = `送信済！！！`;
       localStorage.setItem(storage_key_for_table, output.innerHTML);
     } catch (err) {
-      console.error("メール処理エラー:", err);
+      addErrorMessage("メールの処理に失敗しちょるぞ");
+      addErrorMessage(err);
+      console.error(err);
     }
   });
 
@@ -235,7 +260,7 @@ async function handleVerify() {
     if (!studentsFile) {
       error_text = "「学籍情報」" + error_text;
     }
-    error_message.innerHTML += error_text;
+    addErrorMessage(error_text);
     return;
   }
 
@@ -251,17 +276,17 @@ async function handleVerify() {
 
     const students_info_list = mitaniParseStudents(studentsText);
     if (!students_info_list) {
-      error_message.innerHTML += "「学籍情報」が正しくないようじゃ\n";
+      addErrorMessage("「学籍情報」が正しくないようじゃ");
       return;
     }
     const courses_info_list = mitaniParseCourses(coursesBuffer, course_name);
     if (!courses_info_list) {
-      error_message.innerHTML += "「班別名簿」が正しくないようじゃ\n";
+      addErrorMessage("「班別名簿」が正しくないようじゃ");
       return;
     }
     const emails_info_list = mitaniParseEmails(emailsBuffer, course_name);
     if (!emails_info_list) {
-      error_message.innerHTML += "「メールアドレス一覧」が正しくないようじゃ\n";
+      addErrorMessage("「メールアドレス一覧」が正しくないようじゃ");
       return;
     }
     const students_info_by_student_id = new Map(students_info_list.map(
@@ -301,15 +326,16 @@ async function handleVerify() {
       const td_teacher = row.insertCell();
       td_teacher.textContent = email_contents_info["担当教員"];
       const td_email_button = row.insertCell();
-      td_email_button.appendChild(createEmailBottunElement(email_contents_info, course_name));
+      td_email_button.appendChild(createEmailButtonElement(email_contents_info, course_name));
     }
     output.appendChild(table);
     const storage_key_for_table = "table";
     localStorage.setItem(storage_key_for_table, output.innerHTML);
 
   } catch (err) {
+    addErrorMessage("ファイルの処理がうまくいかんぞ");
+    addErrorMessage(err);
     console.error(err);
-    error_message.innerHTML += "ファイルの処理がうまくいかんぞ\n";
   }
 }
 
@@ -321,7 +347,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   verify_element.addEventListener("click", () => {
-    error_message.innerHTML = "";
+    while (error_message.firstChild) {
+      error_message.removeChild(error_message.firstChild);  
+    }
     while (output.firstChild) {
       output.removeChild(output.firstChild);
     }
@@ -341,7 +369,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!studentsFile) {
         error_text = "「学籍情報」" + error_text;
       }
-      error_message.innerHTML += error_text;
+      addErrorMessage(error_text);
     }
   })
 });
