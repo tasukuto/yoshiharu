@@ -196,6 +196,9 @@ function generateEmailContentsInfo(course_info, students_info_by_student_id, ema
   const student_info_taking_course_list = []
   const emails_info = emails_info_by_course_id.get(course_info["科目番号"]);
   for (const student_id of course_info["学籍番号"]) {
+    if (/\d{6}5\d{2}/.test(student_id)) {
+      continue;
+    }
     const student_info_taking_course = students_info_by_student_id.get(student_id);
     if (!student_info_taking_course) {
       addErrorMessage(`「学籍情報」に学籍番号${student_id}の学生は載っていないようじゃ`);
@@ -323,7 +326,8 @@ async function handleVerify() {
     for (const course_info of courses_info_list) {
       const email_contents_info = generateEmailContentsInfo(course_info, students_info_by_student_id, emails_info_by_course_id);
       if (email_contents_info === undefined) {
-        addErrorMessage("必要なデータを作れないぞ");
+        addErrorMessage(`科目番号${course_info["科目番号"]}のデータを作れないぞ`);
+        continue;
       }
       console.log(email_contents_info);
       if (email_contents_info["学生情報"].length > 0) {
