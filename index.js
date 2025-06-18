@@ -35,7 +35,7 @@ function mustQuerySelector(selector) {
 const students_info_element = mustGetElementById("students_info_element");
 const courses_info_element = mustGetElementById("courses_info_element");
 const emails_info_element = mustGetElementById("emails_info_element");
-const email_subject_element = mustGetElementById("email_subject_element");
+const email_cc_address_element = mustGetElementById("email_cc_address_element");
 const email_body_element = mustGetElementById("email_body_element");
 const verify_element = mustGetElementById("verify_element");
 const error_message = mustGetElementById("error_message");
@@ -70,6 +70,10 @@ function loadEmailandTableFromStorage() {
   const storage_key_for_table = "table";
   const is_already_made = localStorage.getItem(storage_key_for_table);
   if (is_already_made) output.innerHTML = is_already_made;
+
+  const storage_key_for_email_cc_address = "cc_address";
+  const is_already_written_cc_address = localStorage.getItem(storage_key_for_email_cc_address);
+  if (is_already_written_cc_address) email_cc_address_element.value = is_already_written_cc_address;
 
   const storage_key_for_email_subject = "subject";
   const is_already_written_subject = localStorage.getItem(storage_key_for_email_subject);
@@ -290,6 +294,20 @@ function generateEmailVariableInfo(term_name, course_name, email_contents_info) 
   }
 }
 
+// $term_name: 先生の名前
+// $course_name: 科目名
+// $course_id: 科目番号
+// $teacher_name: 担当教員の名前
+// $email_address: 担当教員のメールアドレス
+// $student_info: 「学生番号 学生氏名」の一覧
+
+function getEmailCcAddress() {
+  const email_cc_address_element_latest = mustGetElementById("email_cc_address_element");
+  const storage_key_for_cc_address = "cc_address";
+  localStorage.setItem(storage_key_for_cc_address, email_cc_address_element_latest);
+  return email_cc_address_element_latest.value;
+}
+
 function replaceEmailVariable(input_text, email_variable_info) {
   return input_text.replace(/\$[a-zA-Z]*_[a-zA-Z]*/g, (match) => {
     const key = match.slice(1);
@@ -322,6 +340,7 @@ function createEmailBody(email_variable_info) {
 function createEmailButtonElement(email_variable_info) {
   const course_id = email_variable_info.course_id;
   const email_address = email_variable_info.email_address;
+  const email_cc_address = getEmailCcAddress();
   const email_subject = createEmailSubject(email_variable_info);
   const email_body = createEmailBody(email_variable_info);
 
@@ -336,7 +355,7 @@ function createEmailButtonElement(email_variable_info) {
     try {
       await navigator.clipboard.writeText(email_body);
 
-      window.location.href = `mailto:${encodeURIComponent(email_address)}?subject=${encodeURIComponent(email_subject)}`;
+      window.location.href = `mailto:${encodeURIComponent(email_address)}?cc=${encodeURIComponent(email_cc_address)}?subject=${encodeURIComponent(email_subject)}`;
 
       localStorage.setItem(storage_key_for_button, "true");
       button.textContent = `送信済！！！`;
