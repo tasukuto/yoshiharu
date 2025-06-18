@@ -35,9 +35,12 @@ function mustQuerySelector(selector) {
 const students_info_element = mustGetElementById("students_info_element");
 const courses_info_element = mustGetElementById("courses_info_element");
 const emails_info_element = mustGetElementById("emails_info_element");
+const email_subject_element = mustGetElementById("email_subject_element");
+const email_body_element = mustGetElementById("email_body_element");
 const verify_element = mustGetElementById("verify_element");
 const error_message = mustGetElementById("error_message");
 const output = mustGetElementById("output");
+
 const border_year = 2024;
 const course_name = "情報リテラシー(演習)";
 
@@ -61,6 +64,20 @@ function isCourseID(course_id) {
 function isIrregularStudentID(student_id) {
   if (/\d{6}5\d{2}/.test(student_id)) return true;
   else return false;
+}
+
+function loadEmailandTableFromStorage() {
+  const storage_key_for_table = "table";
+  const is_already_made = localStorage.getItem(storage_key_for_table);
+  if (is_already_made) output.innerHTML = is_already_made;
+
+  const storage_key_for_email_subject = "subject";
+  const is_already_written_subject = localStorage.getItem(storage_key_for_email_subject);
+  if (is_already_written_subject) email_subject_element.value = is_already_written_subject;
+  
+  const storage_key_for_email_body = "body";
+  const is_already_written_body = localStorage.getItem(storage_key_for_email_body);
+  if (is_already_written_body) email_body_element.value = is_already_written_body;
 }
 
 /**
@@ -256,32 +273,57 @@ function generateListGroupedby(column_name, list) {
   return Array.from(list_map.values());
 }
 
-function createEmailBody(email_contents_info, course_name) {
-  const course_id = email_contents_info["科目番号"];
-  const teacher = email_contents_info["担当教員"];
-  const student_info = email_contents_info["学生情報"];
 
+function generateEmailVariableInfo(term_name, course_name, email_contents_info) {
+  const student_info = email_contents_info["学生情報"];
   const student_info_list_text = student_info.map(
     s => `${s["学籍番号"]}　${s["学生氏名"]}`
   ).join("\n");
 
-  return `
-${teacher}先生
-
-${course_name}（科目番号：${course_id}）について、A+～D評価で成績評価される学生がいます。
-該当する学生は以下の通りです。ご確認ください。
-
-${student_info_list_text}
-
-よろしくお願いいたします。
-  `.trim();
+  return {
+    term_name: term_name,
+    course_name: course_name,
+    course_id: email_contents_info["科目番号"],
+    teacher_name: email_contents_info["担当教員"],
+    email_address: email_contents_info["アドレス"],
+    student_info: student_info_list_text
+  }
 }
 
-function createEmailButtonElement(email_contents_info, course_name) {
-  const course_id = email_contents_info["科目番号"];
-  const email_address = email_contents_info["アドレス"];
-  const email_body = createEmailBody(email_contents_info, course_name);
-  const email_subject = `【${email_contents_info["科目番号"]}】${course_name}履修者の評価方法の確認のお願い`
+function replaceEmailVariable(input_text, email_variable_info) {
+  return input_text.replace(/\$[a-zA-Z]*_[a-zA-Z]*/g, (match) => {
+    const key = match.slice(1);
+    return email_variable_info.hasOwnProperty(key) ? email_variable_info[key] : match;
+  });
+}
+
+function createEmailSubject(email_variable_info) {
+  console.log("email_subject_element");
+  console.log(email_subject_element);
+  const email_subject_element_latest = mustGetElementById("email_subject_element");
+  const storage_key_for_email_subject = "subject";
+  localStorage.setItem(storage_key_for_email_subject, email_subject_element_latest.value);
+  console.log("email_subject_element_latest");
+  console.log(email_subject_element_latest);
+  return replaceEmailVariable(email_subject_element_latest.value, email_variable_info);
+}
+
+function createEmailBody(email_variable_info) {
+  console.log("email_body_element");
+  console.log(email_body_element);
+  const email_body_element_latest = mustGetElementById("email_body_element");
+  const storage_key_for_email_body = "body";
+  localStorage.setItem(storage_key_for_email_body, email_body_element_latest.value);
+  console.log("email_body_element_latest");
+  console.log(email_body_element_latest);
+  return replaceEmailVariable(email_body_element_latest.value, email_variable_info);
+}
+
+function createEmailButtonElement(email_variable_info) {
+  const course_id = email_variable_info.course_id;
+  const email_address = email_variable_info.email_address;
+  const email_subject = createEmailSubject(email_variable_info);
+  const email_body = createEmailBody(email_variable_info);
 
   const storage_key_for_button = `email_sent_${course_id}`;
   const storage_key_for_table = "table";  
@@ -382,7 +424,8 @@ async function handleVerify() {
 
     for (const email_contents_info_by_term of email_contents_info_list_by_term) {
       const announcement = document.createElement('h3');
-      announcement.textContent = `${email_contents_info_by_term["実施学期"]}`;
+      const term_name = email_contents_info_by_term["実施学期"];
+      announcement.textContent = `${term_name}`;
       output.appendChild(announcement);
       const table = document.createElement("table");
       table.border = "1";
@@ -395,13 +438,15 @@ async function handleVerify() {
         header.appendChild(th);
       });
       for (const email_contents_info of email_contents_info_by_term.content) {
+        const course_id = email_contents_info["科目番号"];
         const row = table.insertRow();
         const td_course_id = row.insertCell();
-        td_course_id.textContent = email_contents_info["科目番号"];
+        td_course_id.textContent = course_id;
         const td_teacher = row.insertCell();
         td_teacher.textContent = email_contents_info["担当教員"];
         const td_email_button = row.insertCell();
-        td_email_button.appendChild(createEmailButtonElement(email_contents_info, course_name));
+        const email_variable_info = generateEmailVariableInfo(term_name, course_name, email_contents_info);
+        td_email_button.appendChild(createEmailButtonElement(email_variable_info));
       }
       output.appendChild(table);
     }
@@ -416,11 +461,7 @@ async function handleVerify() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const storage_key_for_table = "table";
-  const is_already_made = localStorage.getItem(storage_key_for_table);
-  if (is_already_made) {
-    output.innerHTML = is_already_made;
-  }
+  loadEmailandTableFromStorage();
 
   verify_element.addEventListener("click", () => {
     while (error_message.firstChild) {
