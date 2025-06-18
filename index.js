@@ -277,7 +277,6 @@ function generateListGroupedby(column_name, list) {
   return Array.from(list_map.values());
 }
 
-
 function generateEmailVariableInfo(term_name, course_name, email_contents_info) {
   const student_info = email_contents_info["学生情報"];
   const student_info_list_text = student_info.map(
@@ -294,17 +293,10 @@ function generateEmailVariableInfo(term_name, course_name, email_contents_info) 
   }
 }
 
-// $term_name: 先生の名前
-// $course_name: 科目名
-// $course_id: 科目番号
-// $teacher_name: 担当教員の名前
-// $email_address: 担当教員のメールアドレス
-// $student_info: 「学生番号 学生氏名」の一覧
-
 function getEmailCcAddress() {
   const email_cc_address_element_latest = mustGetElementById("email_cc_address_element");
   const storage_key_for_cc_address = "cc_address";
-  localStorage.setItem(storage_key_for_cc_address, email_cc_address_element_latest);
+  localStorage.setItem(storage_key_for_cc_address, email_cc_address_element_latest.value);
   return email_cc_address_element_latest.value;
 }
 
