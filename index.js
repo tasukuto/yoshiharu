@@ -438,7 +438,7 @@ async function handleVerify() {
     console.log("email_contents_info_list_by_term");
     console.log(email_contents_info_list_by_term);
     const announcement = document.createElement('h2');
-    announcement.textContent = `${course_name}の2024年度以下の学生`;
+    announcement.textContent = `${course_name}の「評語評価（A＋～D）」対象の学生`;
     output.appendChild(announcement);
 
     for (const email_contents_info_by_term of email_contents_info_list_by_term) {
