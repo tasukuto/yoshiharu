@@ -347,7 +347,7 @@ function createEmailButtonElement(email_variable_info) {
     try {
       await navigator.clipboard.writeText(email_body);
 
-      window.location.href = `mailto:${encodeURIComponent(email_address)}?cc=${encodeURIComponent(email_cc_address)}?subject=${encodeURIComponent(email_subject)}`;
+      window.location.href = `mailto:${encodeURIComponent(email_address)}?cc=${encodeURIComponent(email_cc_address)}&subject=${encodeURIComponent(email_subject)}`;
 
       localStorage.setItem(storage_key_for_button, "true");
       button.textContent = `送信済！！！`;
